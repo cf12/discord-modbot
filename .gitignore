@@ -38,3 +38,4 @@ jspm_packages
 
 # Custom Ignore Dirs
 testing
+src/config.json
