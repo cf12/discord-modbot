@@ -1,0 +1,30 @@
+{
+  "name": "modbot",
+  "version": "0.1.0",
+  "description": "A simple Moderation bot for Discord built on Eris for Node.js",
+  "main": "src/bot.js",
+  "dependencies": {
+    "eris": "^0.4.0",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CF12/modbot.git"
+  },
+  "keywords": [
+    "bot",
+    "moderation",
+    "discord"
+  ],
+  "author": "CF12",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CF12/modbot/issues"
+  },
+  "homepage": "https://github.com/CF12/modbot#readme"
+}
