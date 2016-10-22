@@ -29,9 +29,9 @@ function Logger () {
   // Log to channel
   Logger.prototype.logChannel = (log, type) => {
     if (type === 'info') {
-      msg.channel.createMessage('```> INFO: ' + log + '```')
+      message.channel.createMessage('```> INFO: ' + log + '```')
     } else if (type === 'err') {
-      msg.channel.createMessage('```> ERROR: ' + log + '```')
+      message.channel.createMessage('```> ERROR: ' + log + '```')
     } else {
       console.log('ERROR > Invalid channel log')
     }
@@ -39,7 +39,7 @@ function Logger () {
 }
 
 // Vars and Object Init
-let msg = null
+let message = null
 let logger = new Logger()
 
 // On: Bot Ready
@@ -49,7 +49,7 @@ bot.on('ready', () => {
 
 bot.on('messageCreate', (msg) => {
   // Sets global msg var to local msg var
-  msg = msg
+  message = msg
 
   // Simple Ping Command
   if (msg.content.startsWith(pf + 'ping')) {
@@ -60,7 +60,6 @@ bot.on('messageCreate', (msg) => {
   if (msg.content.startsWith(pf + 'purge')) {
     let arg = msg.content.split(' ')
     arg = arg[1]
-    console.log('DEBUG > var arg === ' + arg)
 
     if (arg % 1 === 0 && arg >= 1 && arg <= 100) {
       if (msg.member.permission.has('manageMessages')) {
