@@ -65,27 +65,27 @@ bot.registerCommand('ping', (msg, args) => {
 // Purge Command
 bot.registerCommand('purge', (msg, args) => {
   if (args.length > 1) return logger.logChannel('Invalid usage! Correct syntax: ' + pf + 'purge [1-100]', 'err')
+  if (!msg.member.permission.has('manageMessages')) return logger.logChannel('User does not have the manageMessages permission!', 'err')
+  if (cooldown) return logger.logChannel('Please wait a few seconds before trying again.', 'err')
 
   let arg = args[0]
-
-  if (cooldown) {
-    return logger.logChannel('Please wait a few seconds before trying again.', 'err')
-  }
-
   if (arg % 1 === 0 && arg >= 1 && arg <= 100) {
-    if (msg.member.permission.has('manageMessages')) {
-      cooldown = true
-      msg.channel.purge(args)
-      msg.channel.createMessage(logger.logChannel('Successfully purged ' + arg + ' message(s).', 'info'))
-      .then(msg => {
-        setTimeout(() => {
-          msg.delete()
-          cooldown = false
-        }, 3000)
-      })
-    } else {
-      return logger.logChannel('User does not have the manageMessages permission!', 'err')
-    }
+    cooldown = true
+    msg.channel.purge(args)
+    .then(() => {
+      
+    }, (err) => {
+      return logger.logChannel('Error while processing request. (Does the bot have proper permissions?) See error below:\n' + err)
+    })
+    msg.channel.createMessage(logger.logChannel('Successfully purged ' + arg + ' message(s).', 'info'))
+    .then(msg => {
+      setTimeout(() => {
+        msg.delete()
+        cooldown = false
+      }, 3000)
+    }, (err) => {
+      return logger.logChannel('Error while processing request. (Does the bot have proper permissions?) See error below:\n' + err)
+    })
   } else {
     return logger.logChannel('Invalid arguments! Use an integer from 1 to 100 for your parameter.', 'err')
   }
