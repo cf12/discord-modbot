@@ -5,16 +5,23 @@ const path = require('path')
 
 // Setting up objects & vars
 const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json')))
-let bot = new Eris(config.bot_token)
-let pf = '$'
+let pf = config.prefix
+let notifyMessage = null
+let cooldown = false
+let bot = new Eris.CommandClient(config.bot_token, {}, {
+  'name': 'ModBot',
+  'owner': 'CF12',
+  'prefix': pf,
+  'description': 'A moderation bot designed by CF12'
+})
 
 // Attempts to connect the bot
 bot.connect()
 
 // Class: Logger
-function Logger () {
+class Logger {
   // Log to console
-  Logger.prototype.logConsole = (log, type) => {
+  logConsole (log, type) {
     if (type === 'info') {
       console.log('INFO > ' + log)
     } else if (type === 'err') {
@@ -27,57 +34,94 @@ function Logger () {
   }
 
   // Log to channel
-  Logger.prototype.logChannel = (log, type) => {
+  logChannel (log, type) {
     if (type === 'info') {
-      message.channel.createMessage('```> INFO: ' + log + '```')
+      return '```> INFO: ' + log + '```'
     } else if (type === 'err') {
-      message.channel.createMessage('```> ERROR: ' + log + '```')
+      return '```> ERROR: ' + log + '```'
     } else {
       console.log('ERROR > Invalid channel log')
     }
   }
 }
 
-// Vars and Object Init
-let message = null
-let logger = new Logger()
+// Def Logger
+const logger = new Logger()
 
 // On: Bot Ready
 bot.on('ready', () => {
   console.log('INFO > Bot activated')
 })
 
-bot.on('messageCreate', (msg) => {
-  // Sets global msg var to local msg var
-  message = msg
+/*
+  Commands
+*/
 
-  // Simple Ping Command
-  if (msg.content.startsWith(pf + 'ping')) {
-    msg.channel.createMessage('Pong!')
+// Simple Ping Command
+bot.registerCommand('ping', (msg, args) => {
+  msg.channel.createMessage('Pong!')
+})
+
+// Purge Command
+bot.registerCommand('purge', (msg, args) => {
+  if (args.length > 1) return logger.logChannel('Invalid usage! Correct syntax: ' + pf + 'purge [1-100]', 'err')
+
+  let arg = args[0]
+
+  if (cooldown) {
+    return logger.logChannel('Please wait a few seconds before trying again.', 'err')
   }
 
-  // Purge Command
-  if (msg.content.startsWith(pf + 'purge')) {
-    let arg = msg.content.split(' ')
-    arg = arg[1]
-
-    if (arg % 1 === 0 && arg >= 1 && arg <= 100) {
-      if (msg.member.permission.has('manageMessages')) {
-        msg.channel.purge(arg)
-        logger.logChannel('Successfully purged ' + arg + ' messages.', 'info')
-      } else {
-        logger.logChannel('User does not have the manageMessages permission!', 'err')
-        return
-      }
+  if (arg % 1 === 0 && arg >= 1 && arg <= 100) {
+    if (msg.member.permission.has('manageMessages')) {
+      cooldown = true
+      msg.channel.purge(args)
+      msg.channel.createMessage(logger.logChannel('Successfully purged ' + arg + ' message(s).', 'info'))
+      .then(msg => {
+        setTimeout(() => {
+          msg.delete()
+          cooldown = false
+        }, 3000)
+      })
     } else {
-      logger.logChannel('Invalid arguments! Use an integer from 1 to 100 for your parameter.', 'err')
+      return logger.logChannel('User does not have the manageMessages permission!', 'err')
     }
+  } else {
+    return logger.logChannel('Invalid arguments! Use an integer from 1 to 100 for your parameter.', 'err')
   }
+}, {
+  'description': 'Purge messages in the current channel',
+  'fullDescription': 'Purges a number of messages from channel the command is called in.',
+  'usage': pf + 'purge <1-100>'
+})
 
-  // Debug Command
-  if (msg.content.startsWith(pf + 'db')) {
-    logger.logConsole(msg.member.permission.has('manageMessages'), 'debug')
-  }
+// Debug Command
+bot.registerCommand('db', (msg, args) => {
+  logger.logConsole(msg.member.permission.has('manageMessages'), 'debug')
+})
+
+bot.on('messageCreate', (msg) => {
+  if (msg.author.bot) return
+  if (notifyMessage === null) notifyMessage = msg
+
+  msg.channel.getMessages(1, notifyMessage.id)
+  .then((msgs) => {
+    if (msgs[0].content === msg.content && msgs[0].author.id === msg.author.id) {
+      msg.channel.unsendMessage(msg.id)
+      if (notifyMessage === msg) {
+        msg.channel.createMessage('```SPAMBLOCK™: Spam detected. Please don\'t spam.```')
+        .then((nmsg) => {
+          notifyMessage = nmsg
+          setTimeout(() => {
+            notifyMessage = null
+            nmsg.delete()
+          }, 3000)
+        })
+      } else return
+    }
+  }, (err) => {
+    logger.logConsole(err, 'err')
+  })
 })
 
 // On: Bot Error
