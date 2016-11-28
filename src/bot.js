@@ -6,8 +6,9 @@ const path = require('path')
 // Setting up objects & vars
 const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json')))
 let pf = config.prefix
-let notifyMessage = null
 let cooldown = false
+let spamblockMessage = false
+let spamblockNotifyMessage
 let bot = new Eris.CommandClient(config.bot_token, {}, {
   'name': 'ModBot',
   'owner': 'CF12',
@@ -45,12 +46,24 @@ class Logger {
   }
 }
 
+// Function: Kills message after duration in seconds
+function timeoutMsg (promise, timeout) {
+  return promise.then((msg) => {
+    setTimeout(() => {
+      msg.delete()
+    }, timeout * 1000)
+  })
+}
+
 // Def Logger
 const logger = new Logger()
 
 // On: Bot Ready
 bot.on('ready', () => {
   console.log('INFO > Bot activated')
+  bot.editStatus('online', {
+    'name': 'v0.1.1 - by CF12'
+  })
 })
 
 /*
@@ -60,29 +73,38 @@ bot.on('ready', () => {
 // Simple Ping Command
 bot.registerCommand('ping', (msg, args) => {
   msg.channel.createMessage('Pong!')
+}, {
+  'description': 'Pings the bot',
+  'fullDescription': 'Throws a ping pong ball at the bot'
 })
 
 // Purge Command
 bot.registerCommand('purge', (msg, args) => {
-  if (args.length > 1) return logger.logChannel('Invalid usage! Correct syntax: ' + pf + 'purge [1-100]', 'err')
-  if (args.length === 0) return logger.logChannel('Purges messages: Syntax - ' + pf + 'purge [1-100]', 'info')
-  if (!msg.member.permission.has('manageMessages')) return logger.logChannel('User does not have the manageMessages permission!', 'err')
-  if (cooldown) return logger.logChannel('Please wait a few seconds before trying again.', 'err')
-  logger.logConsole('Memes', 'debug')
+  if (args.length > 1) {
+    timeoutMsg(msg.channel.createMessage(logger.logChannel('Invalid usage! Correct syntax: ' + pf + 'purge [1-100]', 'err')), 5)
+    return
+  } else if (args.length === 0) {
+    timeoutMsg(msg.channel.createMessage(logger.logChannel('Purges messages: ' + pf + 'purge [1-100]', 'info')), 5)
+    return
+  } else if (!msg.member.permission.has('manageMessages')) {
+    timeoutMsg(msg.channel.createMessage(logger.logChannel('User does not have the manageMessages permission!', 'err')), 5)
+    return
+  } else if (cooldown) {
+    timeoutMsg(msg.channel.createMessage(logger.logChannel('Please wait a few seconds before trying again.', 'err')), 5)
+    return
+  }
+
   let arg = args[0]
+
   if (arg % 1 === 0 && arg >= 1 && arg <= 100) {
     cooldown = true
-    msg.channel.purge(args).then(() => {
+    msg.channel.purge(arg).then(() => {
       msg.channel.createMessage(logger.logChannel('Successfully purged ' + arg + ' message(s).', 'info')).then(msg => {
         setTimeout(() => {
-          msg.delete()
           cooldown = false
+          msg.delete()
         }, 3000)
-      }, (err) => {
-        return logger.logChannel('Error while processing request. (Does the bot have proper permissions?) See error below:\n' + err, 'err')
       })
-    }, (err) => {
-      return logger.logChannel('Error while processing request. (Does the bot have proper permissions?) See error below:\n' + err, 'err')
     })
   } else {
     return logger.logChannel('Invalid arguments! Use an integer from 1 to 100 for your parameter.', 'err')
@@ -90,32 +112,39 @@ bot.registerCommand('purge', (msg, args) => {
 }, {
   'description': 'Purge messages in the current channel',
   'fullDescription': 'Purges a number of messages from channel the command is called in.',
-  'usage': pf + 'purge <1-100>'
+  'usage': '<1-100>'
 })
 
 // Debug Command
 bot.registerCommand('db', (msg, args) => {
   logger.logConsole(msg.member.permission.has('manageMessages'), 'debug')
+}, {
+  'description': 'Debug command',
+  'fullDescription': 'Debug command. \'nouf said.'
 })
 
 bot.on('messageCreate', (msg) => {
   if (msg.author.bot) return
-  if (notifyMessage === null) notifyMessage = msg
 
-  msg.channel.getMessages(1, notifyMessage.id)
+  if (spamblockMessage === false) {
+    spamblockNotifyMessage = msg
+  }
+
+  msg.channel.getMessages(2, spamblockNotifyMessage.id)
   .then((msgs) => {
-    if (msgs[0].content === msg.content && msgs[0].author.id === msg.author.id) {
+    if ((msgs[0].content.toUpperCase() === msg.content.toUpperCase() && msgs[0].author.id === msg.author.id) && (msgs[1].content.toUpperCase() === msg.content.toUpperCase() && msgs[1].author.id === msg.author.id)) {
       msg.channel.unsendMessage(msg.id)
-      if (notifyMessage === msg) {
+      if (spamblockMessage === false) {
+        spamblockMessage = true
         msg.channel.createMessage('```SPAMBLOCK™: Spam detected. Please don\'t spam.```')
         .then((nmsg) => {
-          notifyMessage = nmsg
+          spamblockNotifyMessage = nmsg
           setTimeout(() => {
-            notifyMessage = null
+            spamblockMessage = false
             nmsg.delete()
           }, 3000)
         })
-      } else return
+      }
     }
   }, (err) => {
     logger.logConsole(err, 'err')
