@@ -55,6 +55,19 @@ function timeoutMsg (promise, timeout) {
   })
 }
 
+// Function: Analyzes 2 strings for similarities, and returns a percentage of similarities
+function analyzeMessage (msg1, msg2) {
+  msg1 = msg1.toUpperCase()
+  msg2 = msg2.toUpperCase()
+  let simchar = 0
+
+  for (var i = 0; i < msg1.length; i++) {
+    if (msg2.indexOf(msg1[i]) !== -1) simchar = simchar + 1
+  }
+
+  return simchar / msg2.length * 100
+}
+
 // Def Logger
 const logger = new Logger()
 
@@ -76,6 +89,14 @@ bot.registerCommand('ping', (msg, args) => {
 }, {
   'description': 'Pings the bot',
   'fullDescription': 'Throws a ping pong ball at the bot'
+})
+
+// Text similarities db command
+bot.registerCommand('compare', (msg, args) => {
+  msg.channel.createMessage(analyzeMessage(args[0], args[1]))
+}, {
+  'description': 'DB Compares 2 strings',
+  'fullDescription': ''
 })
 
 // Purge Command
@@ -132,7 +153,7 @@ bot.on('messageCreate', (msg) => {
 
   msg.channel.getMessages(2, spamblockNotifyMessage.id)
   .then((msgs) => {
-    if ((msgs[0].content.toUpperCase() === msg.content.toUpperCase() && msgs[0].author.id === msg.author.id) && (msgs[1].content.toUpperCase() === msg.content.toUpperCase() && msgs[1].author.id === msg.author.id)) {
+    if ((analyzeMessage(msgs[0].content, msg.content) >= 90 && msg.author.id === msgs[0].author.id) || (analyzeMessage(msgs[1].content, msg.content) >= 90) && msg.author.id === msgs[1].author.id) {
       msg.channel.unsendMessage(msg.id)
       if (spamblockMessage === false) {
         spamblockMessage = true
