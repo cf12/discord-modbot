@@ -57,9 +57,15 @@ function timeoutMsg (promise, timeout) {
 
 // Function: Analyzes 2 messages for similarities, and returns a percentage of similarities
 function analyzeMessage (msg1, msg2) {
-  if (msg1.attachments.length >= 1 || msg2.attachments.length >= 1) {
-    if (msg1.content === msg2.content) return 100
-    return 0
+  if (msg1.attachments.length > 0 && msg2.attachments.length > 0) {
+    if (msg1.attachments[0].size === msg2.attachments[0].size) {
+      if (msg1.attachments[0].width === msg2.attachments[0].width) {
+        if (msg1.attachments[0].height === msg2.attachments[0].height) {
+          return true
+        }
+      }
+    }
+    return false
   }
 
   msg1 = msg1.content.toUpperCase()
@@ -70,7 +76,8 @@ function analyzeMessage (msg1, msg2) {
     if (msg2.indexOf(msg1[i]) !== -1) simchar = simchar + 1
   }
 
-  return simchar / msg2.length * 100
+  if ((simchar / msg2.length * 100) >= 90) return true
+  return false
 }
 
 // Def Logger
@@ -158,7 +165,7 @@ bot.on('messageCreate', (msg) => {
 
   msg.channel.getMessages(2, spamblockNotifyMessage.id)
   .then((msgs) => {
-    if ((analyzeMessage(msgs[0], msg) >= 90 && msg.author.id === msgs[0].author.id) && (analyzeMessage(msgs[1], msg) >= 90) && msg.author.id === msgs[1].author.id) {
+    if ((analyzeMessage(msgs[0], msg) && msg.author.id === msgs[0].author.id) && (analyzeMessage(msgs[1], msg)) && msg.author.id === msgs[1].author.id) {
       msg.channel.unsendMessage(msg.id)
       if (spamblockMessage === false) {
         spamblockMessage = true
