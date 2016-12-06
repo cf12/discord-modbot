@@ -153,7 +153,7 @@ bot.on('messageCreate', (msg) => {
 
   msg.channel.getMessages(2, spamblockNotifyMessage.id)
   .then((msgs) => {
-    if ((analyzeMessage(msgs[0].content, msg.content) >= 90 && msg.author.id === msgs[0].author.id) || (analyzeMessage(msgs[1].content, msg.content) >= 90) && msg.author.id === msgs[1].author.id) {
+    if ((analyzeMessage(msgs[0].content, msg.content) >= 90 && msg.author.id === msgs[0].author.id) && (analyzeMessage(msgs[1].content, msg.content) >= 90) && msg.author.id === msgs[1].author.id) {
       msg.channel.unsendMessage(msg.id)
       if (spamblockMessage === false) {
         spamblockMessage = true
