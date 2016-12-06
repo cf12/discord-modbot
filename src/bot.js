@@ -55,10 +55,15 @@ function timeoutMsg (promise, timeout) {
   })
 }
 
-// Function: Analyzes 2 strings for similarities, and returns a percentage of similarities
+// Function: Analyzes 2 messages for similarities, and returns a percentage of similarities
 function analyzeMessage (msg1, msg2) {
-  msg1 = msg1.toUpperCase()
-  msg2 = msg2.toUpperCase()
+  if (msg1.attachments.length >= 1 || msg2.attachments.length >= 1) {
+    if (msg1.content === msg2.content) return 100
+    return 0
+  }
+  
+  msg1 = msg1.content.toUpperCase()
+  msg2 = msg2.content.toUpperCase()
   let simchar = 0
 
   for (var i = 0; i < msg1.length; i++) {
@@ -153,7 +158,7 @@ bot.on('messageCreate', (msg) => {
 
   msg.channel.getMessages(2, spamblockNotifyMessage.id)
   .then((msgs) => {
-    if ((analyzeMessage(msgs[0].content, msg.content) >= 90 && msg.author.id === msgs[0].author.id) || (analyzeMessage(msgs[1].content, msg.content) >= 90) && msg.author.id === msgs[1].author.id) {
+    if ((analyzeMessage(msgs[0], msg) >= 90 && msg.author.id === msgs[0].author.id) && (analyzeMessage(msgs[1], msg) >= 90) && msg.author.id === msgs[1].author.id) {
       msg.channel.unsendMessage(msg.id)
       if (spamblockMessage === false) {
         spamblockMessage = true
