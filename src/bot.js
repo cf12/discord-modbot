@@ -55,7 +55,7 @@ function timeoutMsg (promise, timeout) {
   })
 }
 
-// Function: Analyzes 2 messages for similarities, and returns a percentage of similarities
+// Function: Analyzes 2 messages for similarities, returns bool of whether messages are matched / not
 function analyzeMessage (msg1, msg2) {
   if (msg1.attachments.length > 0 && msg2.attachments.length > 0) {
     if (msg1.attachments[0].size === msg2.attachments[0].size) {
@@ -156,6 +156,18 @@ bot.registerCommand('db', (msg, args) => {
   'fullDescription': 'Debug command. \'nouf said.'
 })
 
+// Command: Set log channel
+bot.registerCommand('setlogchannel', (msg, args) => {
+  if (msg.member.id !== msg.guild.ownerID) return logger.logChannel('User isn\'t guild owner! ', 'err')
+
+  config.logchannel = msg.channel.id
+  return logger.logChannel('Done!', 'info')
+}, {
+  'description': '',
+  'fullDescription': ''
+})
+
+// On: Message Creation
 bot.on('messageCreate', (msg) => {
   if (msg.author.bot) return
 
@@ -182,6 +194,11 @@ bot.on('messageCreate', (msg) => {
   }, (err) => {
     logger.logConsole(err, 'err')
   })
+})
+
+// On: Member joined Guild
+bot.on('guildMemberAdd', (guild, member) => {
+  guild.defaultChannel.createMessage(logger.logChannel('User ' + member.user.username + ' has joined the guild!', 'info'))
 })
 
 // On: Bot Error
