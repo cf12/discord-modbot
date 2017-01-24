@@ -11,6 +11,15 @@
       "dontLoad": "",
       "load": "",
       "modules": ""
-    }
+    },
+    "complete_strings": {
+      "maxLength": 15
+    },
+    "doc_comment": {
+      "fullDocs": true,
+      "strong": false
+    },
+    "node_resolve": {},
+    "es_modules": {}
   }
 }
