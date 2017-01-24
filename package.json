@@ -4,7 +4,7 @@
   "description": "A simple Moderation bot for Discord built on Eris for Node.js",
   "main": "src/bot.js",
   "dependencies": {
-    "eris": "^0.4.0",
+    "discord.js": "^11.0.0",
     "fs": "^0.0.1-security",
     "path": "^0.12.7"
   },
