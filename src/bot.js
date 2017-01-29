@@ -96,7 +96,7 @@ bot.on('message', (msg) => {
     msg.delete()
     if (!cache.active_warning) {
       cache.active_warning = true
-      logger.logChannel(msgChannel, 'spam', 'Please don\'t spam.')
+      logger.logChannel(msgChannel, 'spam', 'Please don\'t spam, ' + userCache[msgMember.id].identifier)
       .then((msg) => {
         setTimeout(() => {
           cache.active_warning = false
