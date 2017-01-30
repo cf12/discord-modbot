@@ -1,4 +1,7 @@
 {
   "prefix": "$",
-  "bot_token": ""
+  "bot_token": "",
+  "whitelist": [
+    "123456"
+  ]
 }

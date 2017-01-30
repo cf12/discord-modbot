@@ -65,15 +65,16 @@ bot.on('message', (msg) => {
       // Checks for proper args
       if (msgArgs.length > 1 || (msgArgs[0] > 100 || msgArgs[0] < 1)) return logger.logChannel(msgChannel, 'err', 'Invalid Usage! Proper Usage: **' + pfCommand('purge') + ' [1 - 100]**')
 
-      // Grabs msgs and purges them
-      msgChannel.fetchMessages({limit: msgArgs[0]})
-      .then(msgs => {
-        msg.delete()
-        msgChannel.bulkDelete(msgs)
+      // Deletes current msg
+      msg.delete()
+
+      // Purges the messages
+      msgChannel.bulkDelete(parseInt(msgArgs[0]) + 1)
+      .then(() => {
         logger.logChannel(msgChannel, 'info', 'Successfully purged **' + msgArgs[0] + '** message(s)')
         .then(msg => {
           setTimeout(() => {
-            msg.delete()
+            msg.delete().then(() => { return }, () => { return })
           }, 5000)
         })
       })
@@ -87,11 +88,12 @@ bot.on('message', (msg) => {
     userCache[msgMember.id] = {
       username: msgUser.username,
       identifier: msgUser.toString(),
-      last_msg_timestamp: 0
+      last_msg_timestamp: msg.createdTimestamp
     }
   }
 
   // Spam Protection
+  if (config.whitelist.includes(msgMember.id)) return
   if (msg.createdTimestamp - userCache[msgMember.id].last_msg_timestamp <= 1000) {
     msg.delete()
     if (!cache.active_warning) {
