@@ -4,6 +4,7 @@ function logChannel (channel, type, msg) {
   if (type === 'noperm') return channel.sendMessage(':no_entry:**  | ACCESS DENIED | ** ' + msg)
   if (type === 'help') return channel.sendMessage(':question:**  | HELP | ** ' + msg)
   if (type === 'err') return channel.sendMessage(':warning:**  | ERROR | ** ' + msg)
+  if (type === 'code') return channel.sendMessage('```\n' + msg + '```')
 
   console.log('ERROR IN LOG CHANNEL')
 }

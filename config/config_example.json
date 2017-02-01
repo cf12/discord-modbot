@@ -1,5 +1,5 @@
 {
-  "prefix": "$",
+  "prefix": "-",
   "bot_token": "",
   "whitelist": [
     "123456"

@@ -1,0 +1,20 @@
+[
+  {
+    "command": "help",
+    "syntax_desc": "help [command]",
+    "short_desc": "Displays the help menu",
+    "long_desc": "Displays the help menu. It can also be used to gather further details of a command by using the command as an argument."
+  },
+  {
+    "command": "info",
+    "syntax_desc": "info",
+    "short_desc": "Displays information about the bot",
+    "long_desc": "Displays the help menu. It can also be used to gather further details of a command by using the command as an argument."
+  },
+  {
+    "command": "purge",
+    "syntax_desc": "purge <1 - 100>",
+    "short_desc": "Purges a number of messages from the channel",
+    "long_desc": "Purges a number of messages from the text channel. The number of messages are input, and can be between 1 and 100."
+  }
+]
