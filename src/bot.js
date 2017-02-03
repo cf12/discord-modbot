@@ -67,19 +67,10 @@ bot.on('message', (msg) => {
   if (msg.content.startsWith(pf)) {
     // Command: Help
     if (msgCommand === 'HELP') {
-      let helpMsg =
-      '   _    _ ______ _      _____   \n' +
-      '  | |  | |  ____| |    |  __ \\ \n' +
-      '  | |__| | |__  | |    | |__) | \n' +
-      '  |  __  |  __| | |    |  ___/  \n' +
-      '  | |  | | |____| |____| |      \n' +
-      '  |_|  |_|______|______|_|      \n' +
-      '================================\n'
-      for (let command of commands) {
-        helpMsg += pfCommand(command.command) + ' - ' + command.short_desc + '\n'
-      }
-      logger.logChannel(msgChannel, 'code', helpMsg)
+      let helpMsg = '**                                           MODBOT >> Help Page **\n**==================================================**\n'
+      for (let command of commands) helpMsg += '**' + pfCommand(command.command) + '**' + ' - ' + command.short_desc + '\n'
 
+      logger.logChannel(msgChannel, 'plain', helpMsg)
       return
     }
 
@@ -153,6 +144,8 @@ bot.on('message', (msg) => {
 
   // Updates last messahe timestamp for user
   userCache[msgMember.id].last_msg_timestamp = msg.createdTimestamp
+
+  if (msgContent.toUpperCase() === 'MODBOT?') logger.logChannel(msgChannel, 'info', 'What do you want?')
 })
 
 // Logs the bot in

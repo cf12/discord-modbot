@@ -1,4 +1,5 @@
 function logChannel (channel, type, msg) {
+  if (type === 'plain') return channel.sendMessage(msg)
   if (type === 'info') return channel.sendMessage(':bulb:**  | INFO | ** ' + msg)
   if (type === 'spam') return channel.sendMessage(':octagonal_sign:**  | ANTI-SPAM | ** ' + msg)
   if (type === 'noperm') return channel.sendMessage(':no_entry:**  | ACCESS DENIED | ** ' + msg)
