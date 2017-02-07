@@ -6,6 +6,7 @@ function logChannel (channel, type, msg) {
   if (type === 'help') return channel.sendMessage(':question:**  | HELP | ** ' + msg)
   if (type === 'err') return channel.sendMessage(':warning:**  | ERROR | ** ' + msg)
   if (type === 'code') return channel.sendMessage('```\n' + msg + '```')
+  if (type === 'mdcode') return channel.sendMessage('```markdown\n' + msg + '```')
 
   console.log('ERROR IN LOG CHANNEL')
 }

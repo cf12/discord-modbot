@@ -10,17 +10,14 @@
 // - By: CF12
 
 // Test for DiscordJS
-try {
-  require.resolve('discord.js')
-} catch (err) {
-  console.error('Discord.JS not found. Please make sure that you\'ve installed all the dependencies using \'npm init\'.')
-}
+try { require.resolve('discord.js') } catch (err) { console.error('Discord.JS not found. Please make sure that you\'ve installed all the dependencies using \'npm init\'.') }
 
 // Dependencies
 const DiscordJS = require('discord.js')
 const logger = require('./logger.js')
 const fs = require('fs')
 const path = require('path')
+const os = require('os')
 
 // Load Config Files
 try {
@@ -47,6 +44,7 @@ function pfCommand (command) { return String(pf + command) }
 // Event: On Ready
 bot.on('ready', () => {
   logger.logConsole('info', 'Bot is now online')
+  bot.user.setGame('DEV - By CF12')
 })
 
 // Event: On Message
@@ -74,6 +72,17 @@ bot.on('message', (msg) => {
       return
     }
 
+    // Command: Status
+    if (msgCommand === 'STATUS') {
+      let memoryStats = process.memoryUsage()
+      logger.logChannel(msgChannel, 'mdcode', `
+STATUS:       Online
+UPTIME:       ${Math.ceil(bot.uptime * 0.001)} seconds
+CPU USAGE:    ${os.loadavg()[2]}%
+MEMORY USAGE: ${Math.ceil(memoryStats.heapUsed / 1048576)} / ${Math.ceil(memoryStats.heapTotal / 1048576)} MB`)
+      return
+    }
+
     // Command: Info
     if (msgCommand === 'INFO') {
       logger.logChannel(msgChannel, 'code',
@@ -84,8 +93,14 @@ bot.on('message', (msg) => {
         '                        | |  | | |__| | |__| | |_) | |__| | | |\n' +
         '                        |_|  |_|\\____/|_____/|____/ \\____/  |_|\n' +
         '             ==============================================================\n' +
-        '                          A MODERATION BOT DEVELOPED BY @CF12'
+        '                                 -= EZ BOT, EZ LIFE =-  \n' +
+        '                                  DEVELOPED BY: CF12     '
       )
+      return
+    }
+
+    // Command: Debug
+    if (msgCommand === 'DEBUG') {
       return
     }
 
@@ -131,8 +146,7 @@ bot.on('message', (msg) => {
   if (msg.createdTimestamp - userCache[msgMember.id].last_msg_timestamp <= 500) {
     msg.delete()
     if (!cache.active_warning) {
-      cache.active_warning = true
-      logger.logChannel(msgChannel, 'spam', 'Please don\'t spam, ' + userCache[msgMember.id].identifier)
+      cache.active_warning = logger.logChannel(msgChannel, 'spam', 'Please don\'t spam, ' + userCache[msgMember.id].identifier)
       .then((msg) => {
         setTimeout(() => {
           cache.active_warning = false
@@ -144,8 +158,6 @@ bot.on('message', (msg) => {
 
   // Updates last messahe timestamp for user
   userCache[msgMember.id].last_msg_timestamp = msg.createdTimestamp
-
-  if (msgContent.toUpperCase() === 'MODBOT?') logger.logChannel(msgChannel, 'info', 'What do you want?')
 })
 
 // Logs the bot in
