@@ -61,6 +61,36 @@ bot.on('message', (msg) => {
   let msgCommand = msgArray[0].slice(pf.length).toUpperCase()
   let msgArgs = msgArray.slice(1, msgArray.length)
 
+  // Caches members if they don't exist in the cache yet
+  if (!(msgMember.id in userCache)) {
+    userCache[msgMember.id] = {
+      username: msgUser.username,
+      identifier: msgUser.toString(),
+      last_msg_timestamp: 0
+    }
+  }
+
+  // Spam Protection
+  if (msg.createdTimestamp - userCache[msgMember.id].last_msg_timestamp <= 500) {
+    console.log('test')
+    if (config.whitelist.includes(msgMember.id)) return
+
+    msg.delete()
+    if (!cache.active_warning) {
+      cache.active_warning = logger.logChannel(msgChannel, 'spam', 'Please don\'t spam, ' + userCache[msgMember.id].identifier)
+        .then((msg) => {
+          setTimeout(() => {
+            cache.active_warning = false
+            msg.delete()
+          }, 5000)
+        })
+    }
+    return
+  }
+
+  // Updates last message timestamp for user
+  userCache[msgMember.id].last_msg_timestamp = msg.createdTimestamp
+
   // Command Handler
   if (msg.content.startsWith(pf)) {
     // Command: Help
@@ -131,33 +161,6 @@ MEMORY USAGE: ${Math.ceil(memoryStats.heapUsed / 1048576)} / ${Math.ceil(memoryS
 
     return logger.logChannel(msgChannel, 'err', 'Invalid command. Please use **' + pfCommand('help') + ' **to get a complete list of commands.')
   }
-
-  // Caches members if they don't exist in the cache yet
-  if (!(msgMember.id in userCache)) {
-    userCache[msgMember.id] = {
-      username: msgUser.username,
-      identifier: msgUser.toString(),
-      last_msg_timestamp: 0
-    }
-  }
-
-  // Spam Protection
-  if (config.whitelist.includes(msgMember.id)) return
-  if (msg.createdTimestamp - userCache[msgMember.id].last_msg_timestamp <= 500) {
-    msg.delete()
-    if (!cache.active_warning) {
-      cache.active_warning = logger.logChannel(msgChannel, 'spam', 'Please don\'t spam, ' + userCache[msgMember.id].identifier)
-      .then((msg) => {
-        setTimeout(() => {
-          cache.active_warning = false
-          msg.delete()
-        }, 5000)
-      })
-    }
-  }
-
-  // Updates last messahe timestamp for user
-  userCache[msgMember.id].last_msg_timestamp = msg.createdTimestamp
 })
 
 // Logs the bot in
