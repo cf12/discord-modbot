@@ -10,7 +10,7 @@
     "node-opus": "^0.2.4",
     "path": "^0.12.7",
     "usage": "^0.7.1",
-    "uws": "^0.12.0"
+    "uws": "^8.14.1"
   },
   "devDependencies": {
     "standard": "*"
